@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANPR Results</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            color: #333;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2a3d66;
+            padding: 1.5rem 3rem;
+            position: sticky;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav h1 {
+            color: #fff;
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+            gap: 1.5rem;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 0.6rem 1.2rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        nav ul li a:hover {
+            background-color: #1abc9c;
+            transform: translateY(-3px);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            border: 2px solid #2a3d66;
+        }
+
+        .results-table thead {
+            background: #2a3d66;
+            color: #fff;
+        }
+
+        .results-table th, .results-table td {
+            text-align: left;
+            padding: 1rem;
+            border: 1px solid #ddd;
+        }
+
+        .results-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .results-table th {
+            border-top: 2px solid #2a3d66;
+        }
+
+        .results-table td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .image-container img {
+            width: 100px;
+            height: auto;
+            max-height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                align-items: center;
+                padding: 1rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                width: 90%;
+                padding: 1.5rem;
+            }
+
+            .results-table th, .results-table td {
+                font-size: 0.9rem;
+            }
+
+            .image-container img {
+                width: 80px;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>Traffic Violation Records</h1>
+        <ul>
+            <li><a href="/home">Home</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h2>All Records (Sorted by Date)</h2>
+
+        <form method="GET" action="/results" style="margin-bottom: 20px;">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ request.args.get('start_date') }}">
+            
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ request.args.get('end_date') }}">
+            
+            <button type="submit">Filter</button>
+        </form>
+        
+
+        <!-- Existing Table -->
+        {% if results %}
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>License Plate</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Road ID</th>
+                    <th>Violation</th>
+                    <th>Image</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td>{{ result.timestamp }}</td>
+                    <td>{{ result.number_plate_text }}</td>
+                    <td>{{ result.name }}</td>
+                    <td>{{ result.phone_number }}</td>
+                    <td>{{ result.address }}</td>
+                    <td>{{ result.road_id }}</td>
+                    <td>{{ result.violation }}</td>
+                    <td class="image-container">
+                        {% if result.plate_image_filename %}
+                        <img src="{{ url_for('static', filename='extract_images/' + result.plate_image_filename) }}" alt="Vehicle Image">
+                        {% else %}
+                            No Image
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="no-data">No records found.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
